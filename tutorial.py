@@ -39,7 +39,8 @@ class PongGame:
 
         pygame.quit()
 
-#
+# how good? dependent on opponent
+# each ai vs every other ai
 
 
 def eval_genomes(genomes, config):

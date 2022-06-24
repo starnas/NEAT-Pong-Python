@@ -1,4 +1,5 @@
 from locale import locale_alias
+from isort import file
 import pygame
 from pong import Game
 import neat
@@ -184,6 +185,7 @@ def run_neat(config):
 
     # run n number of generations
     winner = p.run(eval_genomes, 50)
+    # stats.save()
 
     # save the winner genome
     # saving the python object
@@ -218,7 +220,7 @@ if __name__ == "__main__":
                          neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
 
     # run neat to get best ai
-    # run_neat(config)
+    run_neat(config)
 
     # test yourself with the top ai
-    test_ai(config)
+    # test_ai(config)

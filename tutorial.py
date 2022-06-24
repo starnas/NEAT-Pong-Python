@@ -5,6 +5,8 @@ import neat
 import os
 import pickle
 
+# the game of Pong
+
 
 class PongGame:
 
@@ -14,27 +16,55 @@ class PongGame:
         self.left_paddle = self.game.left_paddle
         self.ball = self.game.ball
 
-    def test_ai(self):
+    def test_ai(self, genome, config):
+
+        # create network from the genome
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
+
         run = True
         clock = pygame.time.Clock()
         while run:
-            clock.tick(120)
+
+            # run at 60fps
+            clock.tick(60)
+
+            # close on quit
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
                     break
 
+            # keybindins for player - operating left paddle
             keys = pygame.key.get_pressed()
             if keys[pygame.K_w]:
-                game.move_paddle(left=True, up=True)
+                self.game.move_paddle(left=True, up=True)
             if keys[pygame.K_s]:
-                game.move_paddle(left=True, up=False)
+                self.game.move_paddle(left=True, up=False)
 
-            game_info = game.loop()
+            # have the neural net decide on output
+            output = net.activate(
+                (self.right_paddle.y, self.ball.y, abs(self.right_paddle.x - self.ball.x)))
+
+            # get the highest number from output 1
+            # 0 stay still
+            # 1 move up
+            # 2 move down
+            decision = output.index(max(output))
+
+            # based on the index, make a move
+            if decision == 0:
+                pass
+            elif decision == 1:
+                self.game.move_paddle(left=False, up=True)
+            else:
+                self.game.move_paddle(left=False, up=False)
+
+            # start the game
+            game_info = self.game.loop()
+
+            # display
             print(game_info.left_score, game_info.right_score)
-
-            game.loop()
-            game.draw(True, True)
+            self.game.draw(draw_score=True, draw_hits=False)
             pygame.display.update()
 
         pygame.quit()
@@ -59,7 +89,7 @@ class PongGame:
                 (self.left_paddle.y, self.ball.y, abs(self.left_paddle.x - self.ball.x)))
             output2 = net2.activate(
                 (self.right_paddle.y, self.ball.y, abs(self.right_paddle.x - self.ball.x)))
-            #print(output1, output2)
+            # print(output1, output2)
 
             # get the highest number from output 1
             # 0 stay still
@@ -87,7 +117,7 @@ class PongGame:
             game_info = self.game.loop()
 
             # draw and update
-            #self.game.draw(draw_score=False, draw_hits=True)
+            # self.game.draw(draw_score=False, draw_hits=True)
             # pygame.display.update()
 
             # stop after the first miss
@@ -142,7 +172,7 @@ def run_neat(config):
     p = neat.Population(config)
 
     # restoring from a checkpoint
-    #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-x')
+    # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-x')
 
     # report to std. output, fitness etc.
     p.add_reporter(neat.StdOutReporter(True))
@@ -153,7 +183,27 @@ def run_neat(config):
     p.add_reporter(neat.Checkpointer(1))
 
     # run n number of generations
-    p.run(eval_genomes, 50)
+    winner = p.run(eval_genomes, 50)
+
+    # save the winner genome
+    # saving the python object
+    with open('best.pickle', 'wb') as f:
+        pickle.dump(winner, f)
+
+
+def test_ai(config):
+
+    # define a game window
+    width, height = 700, 500
+    window = pygame.display.set_mode((width, height))
+
+    # load the best genome
+    with open('best.pickle', 'rb') as f:
+        winner = pickle.load(f)
+
+    # start a game with the top ai
+    game = PongGame(window, width, height)
+    game.test_ai(winner)
 
 
 # main loop
@@ -167,4 +217,8 @@ if __name__ == "__main__":
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
 
+    # run neat to get best ai
     run_neat(config)
+
+    # test yourself with the top ai
+    test_ai(config)

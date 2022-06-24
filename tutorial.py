@@ -63,7 +63,7 @@ class PongGame:
             game_info = self.game.loop()
 
             # display
-            print(game_info.left_score, game_info.right_score)
+            #print(game_info.left_score, game_info.right_score)
             self.game.draw(draw_score=True, draw_hits=False)
             pygame.display.update()
 
@@ -203,7 +203,7 @@ def test_ai(config):
 
     # start a game with the top ai
     game = PongGame(window, width, height)
-    game.test_ai(winner)
+    game.test_ai(winner, config)
 
 
 # main loop
@@ -218,7 +218,7 @@ if __name__ == "__main__":
                          neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
 
     # run neat to get best ai
-    run_neat(config)
+    # run_neat(config)
 
     # test yourself with the top ai
     test_ai(config)

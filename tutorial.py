@@ -57,10 +57,9 @@ class PongGame:
             # numeric values for the neural networks
             output1 = net1.activate(
                 (self.left_paddle.y, self.ball.y, abs(self.left_paddle.x - self.ball.x)))
-
             output2 = net2.activate(
                 (self.right_paddle.y, self.ball.y, abs(self.right_paddle.x - self.ball.x)))
-            print(output1, output2)
+            #print(output1, output2)
 
             # get the highest number from output 1
             # 0 stay still
@@ -88,17 +87,21 @@ class PongGame:
             game_info = self.game.loop()
 
             # draw and update
-            self.game.draw()
-            pygame.display.update()
+            #self.game.draw(draw_score=False, draw_hits=True)
+            # pygame.display.update()
 
             # stop after the first miss
             # calulates fitness
-            if game_info.left_score >= 1 or game_info.right_score >= 1:
+            # also stop after 50 hits
+            if game_info.left_score >= 1 or game_info.right_score >= 1 or game_info.left_hits > 50:
                 self.calulcate_fitness(genome1, genome2, game_info)
                 break
 
     def calulcate_fitness(self, genome1, genome2, game_info):
-        pass
+
+        # fitness is the number of hits
+        genome1.fitness += game_info.left_hits
+        genome2.fitness += game_info.right_hits
 
 # how good? dependent on opponent
 # each ai vs every other ai
